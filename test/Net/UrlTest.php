@@ -304,6 +304,38 @@ extends TestCase
       ]),
     ];
 
+    $data["with unset part"] = [
+      [
+        "scheme" => "http",
+        "host" => "localhost",
+        "path" => null,
+      ],
+      $this->_normalized([
+        "scheme" => "http",
+        "host" => "localhost",
+      ]),
+    ];
+
+    $data["with unset query param"] = [
+      [
+        "scheme" => "http",
+        "host" => "localhost",
+        "path" => "/",
+        "query" => [
+          "x" => null,
+          "y" => "",
+        ],
+      ],
+      $this->_normalized([
+        "scheme" => "http",
+        "host" => "localhost",
+        "path" => "/",
+        "query" => [
+          "y" => "",
+        ],
+      ]),
+    ];
+
     return $data;
   }
 

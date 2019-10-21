@@ -1,7 +1,7 @@
 <?php
 /** URL handling class.
 *
-* @version SVN: $Id: Url.php 1030 2019-09-02 07:00:58Z anrdaemon $
+* @version SVN: $Id: Url.php 1035 2019-10-21 10:48:04Z anrdaemon $
 */
 
 namespace AnrDaemon\Net;
@@ -250,15 +250,24 @@ implements \IteratorAggregate, \ArrayAccess, \Countable
 
   /** Create a new instance of the class by replacing parts in the current instance
   *
-  * Note: This is a replacement, not merge; especially in case of a `query` part.
+  * Parts, whose values equal to `null` (or empty array in case of `query` part) are removed from the output.
+  * Same applies to null values of (top-level only for now) query params.
+  *
+  * Note: This is a replacement, not merge; especially not in case of a `query` part.
   *
   * Note: The `query` part is always decoded into an array.
   *
-  * @param array $parts A set of parts to replace. Uses the same names parse_url uses.
+  * @param array|string $parts A part name or set of parts to replace. Uses the same names parse_url uses.
+  * @param ?mixed $value A value of part to replace, if first argument is part name.
   * @return \AnrDaemon\Net\Url A new class instance with corresponding parts replaced.
   */
-  public function setParts(array $parts)
+  public function setParts($parts, $value = null)
   {
+    if(!is_array($parts))
+    {
+      $parts = [$parts => $value];
+    }
+
     /** Filter input array */
     $parts = array_intersect_key($parts, $this->params);
 
@@ -274,7 +283,7 @@ implements \IteratorAggregate, \ArrayAccess, \Countable
     {
       $query = $this->_parse_str($parts['query']);
       $this->_rksort($query);
-      $parts['query'] = $query;
+      $parts['query'] = array_filter($query, function($value) { return isset($value); });
     }
 
     /** Reset empty replacement parts to null
@@ -303,6 +312,25 @@ implements \IteratorAggregate, \ArrayAccess, \Countable
     // Keep URL parts in the same order at all times.
     $self->params = array_replace($this->params, $parts);
     return $self;
+  }
+
+  /** Create a new instance of the class by replacing a set of query params in the current instance
+  *
+  * Parameters set to `null` will be removed from query block.
+  *
+  * Note: This is effectivaly a merge of existing `query` part and provided array.
+  *
+  * @see \AnrDaemon\Net\Url::setParts for more information.
+  *
+  * @param array $params A set of name-value pairs to replace.
+  * @return \AnrDaemon\Net\Url A new class instance with corresponding query manes replaced.
+  */
+  public function setQueryParams(array $params)
+  {
+    /** Compose new query block */
+    $query = $params + $this->params["query"];
+
+    return $this->setParts("query", $query);
   }
 
 // Magic!
