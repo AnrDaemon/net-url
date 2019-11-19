@@ -1,7 +1,7 @@
 <?php
 /** Universal stackable classloader.
 *
-* @version SVN: $Id: classloader.php 1030 2019-09-02 07:00:58Z anrdaemon $
+* @version SVN: $Id: classloader.php 1040 2019-11-19 23:23:52Z anrdaemon $
 */
 
 namespace AnrDaemon;

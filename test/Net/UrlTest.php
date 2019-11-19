@@ -281,22 +281,27 @@ extends TestCase
     foreach($parts as $name => $value)
     {
       $data[$name] = [
-        [$name => $value],
+        [[$name => $value]],
+        $this->_normalized([$name => $value]),
+      ];
+
+      $data["$name(single set)"] = [
+        [$name, $value],
         $this->_normalized([$name => $value]),
       ];
     }
 
     $data["query(as string)"] = [
-      ["query" => "query=string"],
+      [["query" => "query=string"]],
       $this->_normalized(["query" => ["query" => "string"]]),
     ];
 
     $data["in a batch"] = [
-      [
+      [[
         "scheme" => "http",
         "host" => "localhost",
         "path" => "/",
-      ],
+      ]],
       $this->_normalized([
         "scheme" => "http",
         "host" => "localhost",
@@ -305,11 +310,11 @@ extends TestCase
     ];
 
     $data["with unset part"] = [
-      [
+      [[
         "scheme" => "http",
         "host" => "localhost",
         "path" => null,
-      ],
+      ]],
       $this->_normalized([
         "scheme" => "http",
         "host" => "localhost",
@@ -317,7 +322,7 @@ extends TestCase
     ];
 
     $data["with unset query param"] = [
-      [
+      [[
         "scheme" => "http",
         "host" => "localhost",
         "path" => "/",
@@ -325,7 +330,7 @@ extends TestCase
           "x" => null,
           "y" => "",
         ],
-      ],
+      ]],
       $this->_normalized([
         "scheme" => "http",
         "host" => "localhost",
@@ -334,6 +339,62 @@ extends TestCase
           "y" => "",
         ],
       ]),
+    ];
+
+    return $data;
+  }
+
+  public function overrideQueryElementsProvider()
+  {
+    $parts = [
+      "host" => "localhost",
+      "path" => "/",
+      "query" => ["x" => "y"],
+    ];
+
+    $data["(simple set)"] = [
+      [["a" => "b"]],
+      $this->_normalized(["query" => ["a" => "b", "x" => "y"]] + $parts),
+    ];
+
+    $data["(parameter unset)"] = [
+      [["x" => null]],
+      $this->_normalized(["query" => null] + $parts),
+    ];
+
+    $data["(parameter replace)"] = [
+      [["x" => "z"]],
+      $this->_normalized(["query" => ["x" => "z"]] + $parts),
+    ];
+
+    $data["(batch operaton)"] = [
+      [["a" => "b", "x" => null]],
+      $this->_normalized(["query" => ["a" => "b"]] + $parts),
+    ];
+
+    $data["(empty call)"] = [
+      [[]],
+      $this->_normalized($parts),
+    ];
+
+    $data["(single set)"] = [
+      ["a", "b"],
+      $this->_normalized(["query" => ["a" => "b", "x" => "y"]] + $parts),
+    ];
+
+    $data["(single replace)"] = [
+      ["x", "z"],
+      $this->_normalized(["query" => ["x" => "z"]] + $parts),
+    ];
+
+    $data["(single unset)"] = [
+      ["x", null],
+      $this->_normalized(["query" => null] + $parts),
+    ];
+
+    $data["(single empty call)"] = [
+      [null],
+      $this->_normalized($parts),
     ];
 
     return $data;
@@ -497,7 +558,18 @@ extends TestCase
   */
   public function testSetUrlPart($overrides, $parts)
   {
-    $this->assertEquals($parts, static::$url->setParts($overrides));
+    $this->assertEquals($parts, static::$url->setParts(...$overrides));
+  }
+
+  /** Test setting URL query parts
+  *
+  * @dataProvider overrideQueryElementsProvider
+  * @depends testCreateEntityFromUri
+  */
+  public function testSetQueryElements($overrides, $parts)
+  {
+    $url = static::$url->parse("//localhost/?x=y");
+    $this->assertEquals($parts, $url->setQueryParams(...$overrides));
   }
 
   /** Test scheme-port normalization for well-known protocols

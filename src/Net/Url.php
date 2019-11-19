@@ -1,7 +1,7 @@
 <?php
 /** URL handling class.
 *
-* @version SVN: $Id: Url.php 1035 2019-10-21 10:48:04Z anrdaemon $
+* @version SVN: $Id: Url.php 1040 2019-11-19 23:23:52Z anrdaemon $
 */
 
 namespace AnrDaemon\Net;
@@ -322,13 +322,19 @@ implements \IteratorAggregate, \ArrayAccess, \Countable
   *
   * @see \AnrDaemon\Net\Url::setParts for more information.
   *
-  * @param array $params A set of name-value pairs to replace.
+  * @param array|string $params A set of name-value pairs to replace OR a name of the query parameter to (un)set.
+  * @param ?mixed $value A value of query parameter to replace, if first argument is a parameter name.
   * @return \AnrDaemon\Net\Url A new class instance with corresponding query manes replaced.
   */
-  public function setQueryParams(array $params)
+  public function setQueryParams($params, $value = null)
   {
+    if(!is_array($params))
+    {
+      $params = [$params => $value];
+    }
+
     /** Compose new query block */
-    $query = $params + $this->params["query"];
+    $query = $params + (array)$this->params["query"];
 
     return $this->setParts("query", $query);
   }

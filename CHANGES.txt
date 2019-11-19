@@ -1,7 +1,9 @@
 ------------------------------------------------------------------------
-r1035 | anrdaemon | 2019-10-21 13:48:04 +0300 (Mon, 21 Oct 2019) | 3 lines
+r1038 | anrdaemon | 2019-11-20 02:14:53 +0300 (Wed, 20 Nov 2019) | 4 lines
 
-+ Added Url::setQueryParams() method as a wrapper around Url::setParts().
-* Made unsetting query params possible.
++ Added tests for single part sets
++ Added tests for query params sets
++ Added single query param (un)setting
+- Fixed query parts assignment
 
 ------------------------------------------------------------------------
